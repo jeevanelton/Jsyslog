@@ -1,0 +1,11 @@
+[Unit]
+Description=JavaScript Syslog Daemon
+After=network.target
+
+[Service]
+ExecStart=/opt/jsyslogd/bin/jsyslogd
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

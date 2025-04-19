@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>jsyslogd - Real-Time Syslog Dashboard</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-family: monospace; }
+    th { background-color: #f4f4f4; }
+    #pagination-controls { margin-top: 10px; }
+    button { padding: 6px 12px; margin: 0 5px; }
+    #realtimeNotice { color: red; margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>📡 jsyslogd - Real-Time Syslog Dashboard</h2>
+
+  <div id="realtimeNotice"></div>
+
+  <div id="pagination-controls">
+    <button onclick="prevPage()">⬅️ Prev</button>
+    <span id="pageNum">Page 1</span>
+    <button onclick="nextPage()">Next ➡️</button>
+    <button onclick="goToLatest()">🔁 View Latest</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Host</th>
+        <th>Tag</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody id="logBody"></tbody>
+  </table>
+
+  <script>
+    const socket = io();
+    const logBody = document.getElementById('logBody');
+    const pageNum = document.getElementById('pageNum');
+    const notify = document.getElementById('realtimeNotice');
+
+    let currentPage = 1;
+    const limit = 20;
+
+    // Fetch paginated logs
+    async function fetchLogs(page = 1) {
+      const res = await fetch(`/logs?page=${page}&limit=${limit}`);
+      const logs = await res.json();
+      logBody.innerHTML = logs.map(log => `
+        <tr>
+          <td>${log.received_at}</td>
+          <td>${log.hostname}</td>
+          <td>${log.tag}</td>
+          <td>${log.message}</td>
+        </tr>
+      `).join('');
+      pageNum.textContent = `Page ${page}`;
+      notify.textContent = ''; // Clear real-time notice
+    }
+
+    // WebSocket for real-time updates
+    socket.on('new-log', log => {
+      if (currentPage === 1) {
+        const row = `
+          <tr>
+            <td>${log.received_at}</td>
+            <td>${log.hostname}</td>
+            <td>${log.tag}</td>
+            <td>${log.message}</td>
+          </tr>
+        `;
+        logBody.insertAdjacentHTML('afterbegin', row);
+      } else {
+        notify.textContent = "⚠️ New logs available. Click 'View Latest' to refresh.";
+      }
+    });
+
+    // Pagination controls
+    function nextPage() {
+      currentPage++;
+      fetchLogs(currentPage);
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchLogs(currentPage);
+      }
+    }
+
+    function goToLatest() {
+      currentPage = 1;
+      fetchLogs(currentPage);
+    }
+
+    // Initial fetch
+    fetchLogs(currentPage);
+  </script>
+</body>
+</html>
+
