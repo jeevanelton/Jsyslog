@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>jsyslogd - Real-Time Syslog Dashboard</title>
   <script src="/socket.io/socket.io.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
+    input, button { padding: 6px 10px; margin-right: 5px; }
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 8px; font-family: monospace; }
     th { background-color: #f4f4f4; }
-    #pagination-controls { margin-top: 10px; }
-    button { padding: 6px 12px; margin: 0 5px; }
-    #realtimeNotice { color: red; margin-top: 10px; font-weight: bold; }
+    #realtimeNotice { color: red; margin: 10px 0; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -19,7 +18,13 @@
 
   <div id="realtimeNotice"></div>
 
-  <div id="pagination-controls">
+  <div style="margin-bottom: 10px;">
+    <input type="text" id="searchBox" placeholder="Search logs..." oninput="applyFilters()" />
+    <label>From: <input type="datetime-local" id="fromDate" onchange="applyFilters()" /></label>
+    <label>To: <input type="datetime-local" id="toDate" onchange="applyFilters()" /></label>
+  </div>
+
+  <div>
     <button onclick="prevPage()">⬅️ Prev</button>
     <span id="pageNum">Page 1</span>
     <button onclick="nextPage()">Next ➡️</button>
@@ -43,13 +48,30 @@
     const logBody = document.getElementById('logBody');
     const pageNum = document.getElementById('pageNum');
     const notify = document.getElementById('realtimeNotice');
+    const searchBox = document.getElementById('searchBox');
+    const fromInput = document.getElementById('fromDate');
+    const toInput = document.getElementById('toDate');
 
     let currentPage = 1;
     const limit = 20;
+    let currentSearch = '';
+    let fromTime = '';
+    let toTime = '';
 
-    // Fetch paginated logs
-    async function fetchLogs(page = 1) {
-      const res = await fetch(`/logs?page=${page}&limit=${limit}`);
+    function applyFilters() {
+      currentSearch = searchBox.value.trim();
+      fromTime = fromInput.value;
+      toTime = toInput.value;
+      currentPage = 1;
+      fetchLogs(currentPage, currentSearch, fromTime, toTime);
+    }
+
+    async function fetchLogs(page = 1, search = '', from = '', to = '') {
+      let url = `/logs?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
+      if (from) url += `&from=${encodeURIComponent(from)}`;
+      if (to)   url += `&to=${encodeURIComponent(to)}`;
+
+      const res = await fetch(url);
       const logs = await res.json();
       logBody.innerHTML = logs.map(log => `
         <tr>
@@ -60,12 +82,34 @@
         </tr>
       `).join('');
       pageNum.textContent = `Page ${page}`;
-      notify.textContent = ''; // Clear real-time notice
+      notify.textContent = '';
     }
 
-    // WebSocket for real-time updates
+    function nextPage() {
+      currentPage++;
+      fetchLogs(currentPage, currentSearch, fromTime, toTime);
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        fetchLogs(currentPage, currentSearch, fromTime, toTime);
+      }
+    }
+
+    function goToLatest() {
+      currentPage = 1;
+      currentSearch = '';
+      fromTime = '';
+      toTime = '';
+      searchBox.value = '';
+      fromInput.value = '';
+      toInput.value = '';
+      fetchLogs(currentPage);
+    }
+
     socket.on('new-log', log => {
-      if (currentPage === 1) {
+      if (currentPage === 1 && !currentSearch && !fromTime && !toTime) {
         const row = `
           <tr>
             <td>${log.received_at}</td>
@@ -80,27 +124,8 @@
       }
     });
 
-    // Pagination controls
-    function nextPage() {
-      currentPage++;
-      fetchLogs(currentPage);
-    }
-
-    function prevPage() {
-      if (currentPage > 1) {
-        currentPage--;
-        fetchLogs(currentPage);
-      }
-    }
-
-    function goToLatest() {
-      currentPage = 1;
-      fetchLogs(currentPage);
-    }
-
-    // Initial fetch
+    // Initial load
     fetchLogs(currentPage);
   </script>
 </body>
 </html>
-
