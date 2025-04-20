@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import LogTable from './components/LogTable';
 import Filters from './components/Filters';
 import RealtimeNotice from './components/RealtimeNotice';
-import socketIOClient from 'socket.io-client';
+import { io } from "socket.io-client";
 import './index.css';
 
-const socket = socketIOClient("http://localhost:3000");
+const socket = io("http://localhost:3000");
 
 function App() {
   const [logs, setLogs] = useState([]);
@@ -31,23 +31,34 @@ function App() {
 
   useEffect(() => {
     fetchLogs(page, search, from, to);
-  }, [page, search, from, to]);
+  }, [page]);
+
+  console.log("page",page)
 
   useEffect(() => {
     console.log("Connecting to socket...");
-  socket.on('connect', () => {
-    console.log("✅ Connected to socket.io server");
+    socket.on('connect', () => {
+     console.log("✅ Connected to socket.io server");
     });
     socket.on('new-log', log => {
-      console.log("🔥 Received real-time log:", log);
+      console.log("🔥 Received real-time log:", log, "page", page);
       if (page === 1 && !search && !from && !to) {
+        
         setLogs(prev => [log, ...prev.slice(0, limit - 1)]);
       } else {
         setNewLogNotice(true);
       }
     });
-    return () => socket.disconnect();
-  }, [page, search, from, to]);
+    socket.on('disconnect', () => {
+      console.log("❌ Disconnected from socket.io server");
+    });
+    return () => {
+      socket.off('connect');
+      socket.off('new-log');
+      socket.off('disconnect');
+    };
+  }, [page]);
+  
 
   const handleReset = () => {
     setSearch('');

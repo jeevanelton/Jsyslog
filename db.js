@@ -50,3 +50,26 @@ exports.getLogs = async (limit = 50, offset = 0, search = '', from = null, to = 
 
 
 
+exports.insertParsedLog = async (log, callback) => {
+  const query = `
+    INSERT INTO logs (hostname, host_address, facility, severity, message, received_at)
+    VALUES ($1, $2, $3, $4, $5, $6)
+    RETURNING *;
+  `;
+  const values = [
+    log.hostname,
+    log.host_address,
+    log.facility,
+    log.severity,
+    log.message,
+    log.date,
+  ];
+
+  try {
+    const result = await pool.query(query, values);
+    callback?.(result.rows[0]);
+  } catch (err) {
+    console.error("❌ Error inserting parsed log:", err);
+    callback?.(null);
+  }
+};
