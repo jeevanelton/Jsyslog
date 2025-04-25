@@ -52,8 +52,8 @@ exports.getLogs = async (limit = 50, offset = 0, search = '', from = null, to = 
 
 exports.insertParsedLog = async (log, callback) => {
   const query = `
-    INSERT INTO logs (hostname, host_address, facility, severity, message, received_at)
-    VALUES ($1, $2, $3, $4, $5, $6)
+    INSERT INTO logs (hostname, host_address, facility, severity, message, received_at, raw)
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING *;
   `;
   const values = [
@@ -63,6 +63,7 @@ exports.insertParsedLog = async (log, callback) => {
     log.severity,
     log.message,
     log.date,
+    log.raw,
   ];
 
   try {

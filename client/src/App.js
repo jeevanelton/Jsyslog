@@ -25,6 +25,7 @@ function App() {
     if (to) url += `&to=${encodeURIComponent(to)}`;
     const res = await fetch(url);
     const data = await res.json();
+    console.log(data)
     setLogs(data);
     setNewLogNotice(false);
   };
