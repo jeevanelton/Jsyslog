@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const LogsTable = ({ logs }) => {
+const LogTable = ({ logs }) => {
   const [expandedRow, setExpandedRow] = useState(null);
 
   const toggleRow = (index) => {
@@ -64,4 +64,4 @@ const LogsTable = ({ logs }) => {
   );
 };
 
-export default LogsTable;
+export default LogTable;

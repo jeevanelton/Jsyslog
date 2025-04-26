@@ -1,0 +1,8 @@
+{
+  "listen_udp": true,
+  "listen_tcp": false,
+  "port_udp": 514,
+  "port_tcp": 514,
+  "real_time": true,
+  "retain_days": 30
+}

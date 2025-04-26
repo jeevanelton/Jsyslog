@@ -1,106 +1,156 @@
-import React, { useEffect, useState } from 'react';
-import LogTable from './components/LogTable';
-import Filters from './components/Filters';
-import RealtimeNotice from './components/RealtimeNotice';
-import { io } from "socket.io-client";
-import './index.css';
+// import React, { useEffect, useState } from 'react';
+// import LogTable from './components/LogTable';
+// import Filters from './components/Filters';
+// import RealtimeNotice from './components/RealtimeNotice';
+// import { io } from "socket.io-client";
+// import './index.css';
+// import SettingsPanel from './pages/SettingsPanel';
+// import DashboardPage from './pages/DashboardPage';
+// import EventsExplorerPage from './pages/EventsExplorerPage';
 
-const socket = io("http://localhost:3000");
+// const socket = io("http://localhost:3000");
+
+// function App() {
+//   const [logs, setLogs] = useState([]);
+//   const [page, setPage] = useState(1);
+//   const [search, setSearch] = useState('');
+//   const [from, setFrom] = useState('');
+//   const [to, setTo] = useState('');
+//   const [newLogNotice, setNewLogNotice] = useState(false);
+
+  
+
+//   const limit = 20;
+
+//   const fetchLogs = async (page, search, from, to) => {
+//     let url = `/logs?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
+//     if (from) url += `&from=${encodeURIComponent(from)}`;
+//     if (to) url += `&to=${encodeURIComponent(to)}`;
+//     const res = await fetch(url);
+//     const data = await res.json();
+   
+//     setLogs(data);
+//     setNewLogNotice(false);
+//   };
+
+//   useEffect(() => {
+//     fetchLogs(page, search, from, to);
+//   }, [page]);
+
+ 
+
+//   useEffect(() => {
+//     console.log("Connecting to socket...");
+//     socket.on('connect', () => {
+//      console.log("✅ Connected to socket.io server");
+//     });
+//     socket.on('new-log', log => {
+//       console.log("🔥 Received real-time log:", log, "page", page);
+//       if (page === 1 && !search && !from && !to) {
+        
+//         setLogs(prev => [log, ...prev.slice(0, limit - 1)]);
+//       } else {
+//         setNewLogNotice(true);
+//       }
+//     });
+//     socket.on('disconnect', () => {
+//       console.log("❌ Disconnected from socket.io server");
+//     });
+//     return () => {
+//       socket.off('connect');
+//       socket.off('new-log');
+//       socket.off('disconnect');
+//     };
+//   }, [page]);
+  
+
+//   const handleReset = () => {
+//     setSearch('');
+//     setFrom('');
+//     setTo('');
+//     setPage(1);
+//     fetchLogs(1, '', '', '');
+//   };
+
+
+//   const handleFilter = () => {
+//     fetchLogs(1, search, from, to);
+//     setPage(1);
+//   };
+  
+
+//   return (
+//     <div className="p-6 font-sans bg-gray-50 min-h-screen">
+//       <h1 className="text-3xl font-bold mb-6 text-gray-800">📡 jsyslogd - Real-Time Syslog Dashboard</h1>
+//       <SettingsPanel />
+      
+//       <Filters
+//          search={search} 
+//          setSearch={setSearch}
+//          from={from} 
+//          setFrom={setFrom}
+//          to={to} 
+//          setTo={setTo}
+//          onReset={handleReset}
+//          onFilter={handleFilter}
+//       />
+
+//       <RealtimeNotice visible={newLogNotice} onRefresh={handleReset} />
+
+//       <LogTable logs={logs} />
+
+//       <div className="mt-6 flex items-center gap-6">
+//         <button onClick={() => setPage(p => Math.max(p - 1, 1))} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">⬅ Prev</button>
+//         <span className="text-gray-700">Page {page}</span>
+//         <button onClick={() => setPage(p => p + 1)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next ➡</button>
+//       </div>
+//     </div>
+//   );
+// }
+
+// export default App;
+
+
+
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import DashboardPage from "./pages/DashboardPage";
+import EventsExplorerPage from "./pages/EventsExplorerPage";
+import SettingsPanel from "./pages/SettingsPanel";
+import React from "react";
 
 function App() {
-  const [logs, setLogs] = useState([]);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
-  const [newLogNotice, setNewLogNotice] = useState(false);
-
-  
-
-  const limit = 20;
-
-  const fetchLogs = async (page, search, from, to) => {
-    let url = `/logs?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
-    if (from) url += `&from=${encodeURIComponent(from)}`;
-    if (to) url += `&to=${encodeURIComponent(to)}`;
-    const res = await fetch(url);
-    const data = await res.json();
-    console.log(data)
-    setLogs(data);
-    setNewLogNotice(false);
-  };
-
-  useEffect(() => {
-    fetchLogs(page, search, from, to);
-  }, [page]);
-
-  console.log("page",page)
-
-  useEffect(() => {
-    console.log("Connecting to socket...");
-    socket.on('connect', () => {
-     console.log("✅ Connected to socket.io server");
-    });
-    socket.on('new-log', log => {
-      console.log("🔥 Received real-time log:", log, "page", page);
-      if (page === 1 && !search && !from && !to) {
-        
-        setLogs(prev => [log, ...prev.slice(0, limit - 1)]);
-      } else {
-        setNewLogNotice(true);
-      }
-    });
-    socket.on('disconnect', () => {
-      console.log("❌ Disconnected from socket.io server");
-    });
-    return () => {
-      socket.off('connect');
-      socket.off('new-log');
-      socket.off('disconnect');
-    };
-  }, [page]);
-  
-
-  const handleReset = () => {
-    setSearch('');
-    setFrom('');
-    setTo('');
-    setPage(1);
-    fetchLogs(1, '', '', '');
-  };
-
-
-  const handleFilter = () => {
-    fetchLogs(1, search, from, to);
-    setPage(1);
-  };
-  
-
   return (
-    <div className="p-6 font-sans bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">📡 jsyslogd - Real-Time Syslog Dashboard</h1>
+    <Router>
+      <div className="min-h-screen bg-gray-50">
+        {/* Navigation Bar */}
+        <header className="bg-white shadow mb-6">
+          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold text-gray-800">📡 jsyslogd</h1>
+            <nav className="space-x-6">
+              <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 font-medium">
+                Dashboard
+              </Link>
+              <Link to="/events" className="text-gray-600 hover:text-blue-600 font-medium">
+                Events Explorer
+              </Link>
+              <Link to="/settings" className="text-gray-600 hover:text-blue-600 font-medium">
+                Settings
+              </Link>
+            </nav>
+          </div>
+        </header>
 
-      <Filters
-         search={search} 
-         setSearch={setSearch}
-         from={from} 
-         setFrom={setFrom}
-         to={to} 
-         setTo={setTo}
-         onReset={handleReset}
-         onFilter={handleFilter}
-      />
-
-      <RealtimeNotice visible={newLogNotice} onRefresh={handleReset} />
-
-      <LogTable logs={logs} />
-
-      <div className="mt-6 flex items-center gap-6">
-        <button onClick={() => setPage(p => Math.max(p - 1, 1))} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">⬅ Prev</button>
-        <span className="text-gray-700">Page {page}</span>
-        <button onClick={() => setPage(p => p + 1)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next ➡</button>
+        {/* Page Content */}
+        <main className="container mx-auto px-6">
+          <Routes>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/events" element={<EventsExplorerPage />} />
+            <Route path="/settings" element={<SettingsPanel />} />
+            <Route path="*" element={<DashboardPage />} />
+          </Routes>
+        </main>
       </div>
-    </div>
+    </Router>
   );
 }
 
