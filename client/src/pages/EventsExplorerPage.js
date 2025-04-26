@@ -11,25 +11,27 @@ const EventsExplorerPage = () => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [newLogNotice, setNewLogNotice] = useState(false);
-
+  const [severity, setSeverity] = useState('');
+  const [facility, setFacility] = useState('');
   
 
   const limit = 20;
 
-  const fetchLogs = async (page, search, from, to) => {
+  const fetchLogs = async (page, search, from, to, severity, facility) => {
     let url = `/logs?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
     if (from) url += `&from=${encodeURIComponent(from)}`;
     if (to) url += `&to=${encodeURIComponent(to)}`;
+    if (severity) url += `&severity=${encodeURIComponent(severity)}`;
+    if (facility) url += `&facility=${encodeURIComponent(facility)}`;
+  
     const res = await fetch(url);
     const data = await res.json();
-   
     setLogs(data);
-    console.log("Fetched logs:", data);
     setNewLogNotice(false);
   };
 
   useEffect(() => {
-    fetchLogs(page, search, from, to);
+    fetchLogs(page, search, from, to, severity, facility);
   }, [page]);
 
 
@@ -38,11 +40,13 @@ const EventsExplorerPage = () => {
     setFrom('');
     setTo('');
     setPage(1);
+    setFacility('');
+    setSeverity('');
     fetchLogs(1, '', '', '');
   };
 
   const handleFilter = () => {
-    fetchLogs(1, search, from, to);
+    fetchLogs(1, search, from, to, severity, facility);
     setPage(1);
   };
 
@@ -59,6 +63,10 @@ const EventsExplorerPage = () => {
         setTo={setTo}
         onReset={handleReset}
         onFilter={handleFilter}
+        severity={severity}
+        setSeverity={setSeverity}
+        facility={facility}
+        setFacility={setFacility}
       />
 
       <RealtimeNotice visible={newLogNotice} onRefresh={handleReset} />

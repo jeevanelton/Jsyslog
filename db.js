@@ -23,22 +23,31 @@ exports.insertLog = async (host, tag, msg, callback) => {
   }
 };
 
-exports.getLogs = async (limit = 50, offset = 0, search = '', from = null, to = null, callback) => {
+exports.getLogs = async (limit = 50, offset = 0, search = '', from = null, to = null, severity = '', facility = '', callback) => {
   let query = `
     SELECT * FROM logs
-    WHERE (message ILIKE $1 OR hostname ILIKE $1 OR tag ILIKE $1)
+    WHERE (message ILIKE $1 OR hostname ILIKE $1)
   `;
   const values = [`%${search}%`];
+  let count = 2;
 
   if (from && to) {
-    query += ` AND received_at BETWEEN $2 AND $3`;
+    query += ` AND received_at BETWEEN $${count++} AND $${count++}`;
     values.push(from, to);
-    values.push(limit, offset);
-    query += ` ORDER BY received_at DESC LIMIT $4 OFFSET $5`;
-  } else {
-    values.push(limit, offset);
-    query += ` ORDER BY received_at DESC LIMIT $2 OFFSET $3`;
   }
+
+  if (severity) {
+    query += ` AND severity = $${count++}`;
+    values.push(severity);
+  }
+
+  if (facility) {
+    query += ` AND facility = $${count++}`;
+    values.push(facility);
+  }
+
+  query += ` ORDER BY received_at DESC LIMIT $${count++} OFFSET $${count++}`;
+  values.push(limit, offset);
 
   try {
     const result = await pool.query(query, values);
