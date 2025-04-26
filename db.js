@@ -83,3 +83,5 @@ exports.insertParsedLog = async (log, callback) => {
     callback?.(null);
   }
 };
+
+exports.query = (text, params) => pool.query(text, params);

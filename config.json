@@ -1,6 +1,6 @@
 {
   "listen_udp": true,
-  "listen_tcp": false,
+  "listen_tcp": true,
   "port_udp": 514,
   "port_tcp": 514,
   "real_time": true,

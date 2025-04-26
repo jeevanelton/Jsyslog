@@ -9,15 +9,15 @@ const LogTable = ({ logs }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full border text-sm">
-        <thead className="bg-gray-100 text-left">
+      <table className="min-w-full text-sm border-collapse">
+        <thead className="bg-gray-100 sticky top-0 z-10">
           <tr>
-            <th className="p-2">Severity</th>
-            <th className="p-2">Facility</th>
-            <th className="p-2">Hostname</th>
-            <th className="p-2">IP Address</th>
-            <th className="p-2">Message</th>
-            <th className="p-2">Date</th>
+            <th className="p-2 text-left">Severity</th>
+            <th className="p-2 text-left">Facility</th>
+            <th className="p-2 text-left">Hostname</th>
+            <th className="p-2 text-left">IP Address</th>
+            <th className="p-2 text-left">Message</th>
+            <th className="p-2 text-left">Date</th>
           </tr>
         </thead>
         <tbody>
@@ -25,15 +25,14 @@ const LogTable = ({ logs }) => {
             <React.Fragment key={index}>
               <tr
                 onClick={() => toggleRow(index)}
-                className={`cursor-pointer transition-colors ${
-                  log.severity === "crit" || log.severity === "alert"
+                className={`cursor-pointer transition-colors ${log.severity === "crit" || log.severity === "alert"
                     ? "bg-red-50 text-red-800"
                     : log.severity === "warning"
-                    ? "bg-yellow-50 text-yellow-800"
-                    : log.severity === "debug"
-                    ? "text-gray-600"
-                    : "text-gray-800"
-                } hover:bg-gray-100`}
+                      ? "bg-yellow-50 text-yellow-800"
+                      : log.severity === "debug"
+                        ? "text-gray-600"
+                        : "text-gray-800"
+                  } hover:bg-gray-100`}
               >
                 <td className="p-2">{log.severity}</td>
                 <td className="p-2">{log.facility}</td>
