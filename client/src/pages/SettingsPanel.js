@@ -108,6 +108,20 @@ const SettingsPanel = () => {
             className="w-full mt-1 p-2 border rounded"
           />
         </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Allowed Hosts (comma separated)</label>
+          <input
+            type="text"
+            value={settings.allowed_hosts?.join(", ") || ""}
+            onChange={(e) => {
+              const hosts = e.target.value.split(",").map(h => h.trim()).filter(Boolean);
+              setSettings({ ...settings, allowed_hosts: hosts });
+            }}
+            className="w-full mt-1 p-2 border rounded"
+          />
+          <p className="text-xs text-gray-500 mt-1">Example: 192.168.1.100, 192.168.1.101</p>
+        </div>
+
 
         <button
           onClick={handleSave}

@@ -1,6 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import LogTable from "../components/LogTable";
+import LogsSecChart from "../components/LogsSecChart";
+
+
 
 const socket = io("http://192.168.1.204:3000");
 
@@ -13,6 +16,8 @@ const DashboardPage = () => {
     cpu: 0,
     memory: 0,
   });
+
+  const [logsPerSecHistory, setLogsPerSecHistory] = useState([]);
 
   const MAX_LOGS = 30;
 
@@ -48,6 +53,15 @@ const DashboardPage = () => {
         const res = await fetch("/api/admin/stats");
         const data = await res.json();
         setStats(data);
+
+        setLogsPerSecHistory(prev => {
+          const updated = [...prev, data.logsPerSecond];
+          if (updated.length > 12) {   // Keep only 1 minute (if fetch every 5s)
+            updated.shift();
+          }
+          return updated;
+        });
+
       } catch (err) {
         console.error("Failed to fetch admin stats", err);
       }
@@ -73,6 +87,10 @@ const DashboardPage = () => {
         <div className="bg-white p-4 rounded shadow">
           <h2 className="text-lg font-bold">🧠 Logs/sec</h2>
           <p className="text-2xl">{stats.logsPerSecond}</p>
+        </div>
+        <div className="bg-white p-4 rounded shadow mb-6">
+          <h2 className="text-lg font-bold mb-2">📈 Logs/sec Trend (Last 1 min)</h2>
+          <LogsSecChart dataPoints={logsPerSecHistory} />
         </div>
         <div className="bg-white p-4 rounded shadow">
           <h2 className="text-lg font-bold">📂 Total Logs</h2>
