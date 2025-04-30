@@ -14,7 +14,7 @@ const LoginPage = ({ onLogin }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-    console.log({ username, password });
+
     try {
       const res = await fetch("/api/login", {
         method: "POST",

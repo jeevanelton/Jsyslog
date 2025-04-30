@@ -12,22 +12,34 @@ import EventsExplorerPage from "./pages/EventsExplorerPage";
 import SettingsPanel from "./pages/SettingsPanel";
 import LoginPage from "./pages/LoginPage";
 import Navbar from "./components/Navbar";
+import UserManagementPage from "./pages/UserManagementPage";
+
 
 function App() {
   const [user, setUser] = useState(null);
-
+  const [authLoading, setAuthLoading] = useState(true);
+  
+  
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
+    setAuthLoading(false);
   }, []);
 
   const ProtectedRoute = ({ element, allowedRoles }) => {
     if (!user) return <Navigate to="/login" />;
+
     if (allowedRoles && !allowedRoles.includes(user.role)) {
+
+ 
       return <Navigate to="/dashboard" />;
     }
+
+
     return element;
   };
+
+  if (authLoading) return <div className="p-6">Loading...</div>;
 
   return (
     <Router>
@@ -54,10 +66,17 @@ function App() {
 
             <Route path="/dashboard" element={<ProtectedRoute element={<DashboardPage />} />} />
             <Route path="/events" element={<ProtectedRoute element={<EventsExplorerPage />} />} />
+
+            <Route
+              path="/admin/users"
+              element={<ProtectedRoute element={<UserManagementPage />} allowedRoles={["admin"]} />}
+            />
             <Route
               path="/settings"
               element={<ProtectedRoute element={<SettingsPanel />} allowedRoles={["admin"]} />}
             />
+
+
 
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>

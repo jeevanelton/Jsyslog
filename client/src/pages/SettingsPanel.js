@@ -10,11 +10,15 @@ const SettingsPanel = () => {
 
 
   useEffect(() => {
-    fetch("/api/settings")
+    fetch("/api/settings",{
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         setSettings(data);
-        setAllowedHostsInput(data.allowed_hosts?.join(", ") || ""); // ✅ Fix here
+        setAllowedHostsInput(data.allowed_hosts?.join(", ") || ""); 
         setLoading(false);
       })
       .catch((err) => {
