@@ -3,14 +3,13 @@
 const express = require('express');
 const fs = require('fs');
 const router = express.Router();
-
 const path = require('path');
 const configPath = path.join(__dirname, '../config.json');
-
 const validateSettings = require('./validateSettings');
+const { requireAuth, requireRole } = require("../middleware/auth");
 
 // GET current settings
-router.get('/', (req, res) => {
+router.get('/',requireAuth, (req, res) => {
   try {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     res.json(config);
@@ -20,7 +19,7 @@ router.get('/', (req, res) => {
 });
 
 // POST update settings
-router.post('/', (req, res) => {
+router.post('/', requireAuth, requireRole("admin"), (req, res) => {
   try {
     const newSettings = req.body;
 
