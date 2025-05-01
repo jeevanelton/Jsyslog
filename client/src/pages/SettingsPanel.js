@@ -32,12 +32,13 @@ const SettingsPanel = () => {
     try {
       const res = await fetch("/api/settings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}` 
+        },
         body: JSON.stringify(settings),
       });
       const data = await res.json();
-
-      console.log (data)
 
       if (!res.ok) {
         const fieldSpecific = {};
@@ -56,7 +57,8 @@ const SettingsPanel = () => {
         if (generalErrors.length) {
           alert("Validation error:\n" + generalErrors.join("\n"));
         }
-
+         
+        setSaving(false);
         return; // Stop execution
       } else {
         alert("Settings saved successfully!");

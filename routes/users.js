@@ -4,6 +4,8 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const { Pool } = require("pg");
 const { requireAuth, requireRole } = require("../middleware/auth");
+const validateUser = require("../middleware/validateUser");
+
 
 const pool = new Pool();
 
@@ -19,12 +21,9 @@ router.get("/users", requireAuth, requireRole("admin"), async (req, res) => {
 });
 
 // POST /api/users - Create a new user (admin only)
-router.post("/users", requireAuth, requireRole("admin"), async (req, res) => {
+router.post("/users", requireAuth, requireRole("admin"), validateUser, async (req, res) => {
   const { username, password, role } = req.body;
-  if (!username || !password || !role) {
-    return res.status(400).json({ error: "Missing username, password, or role" });
-  }
-
+ 
   try {
     const hash = await bcrypt.hash(password, 10);
     await pool.query(

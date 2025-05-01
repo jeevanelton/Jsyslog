@@ -23,31 +23,65 @@ exports.insertLog = async (host, tag, msg, callback) => {
   }
 };
 
-exports.getLogs = async (limit = 50, offset = 0, search = '', from = null, to = null, severity = '', facility = '', callback) => {
-  let query = `
-    SELECT * FROM logs
-    WHERE (message ILIKE $1 OR hostname ILIKE $1)
-  `;
-  const values = [`%${search}%`];
-  let count = 2;
+// 🧩 db.js - getLogs function with advanced filter support
+
+exports.getLogs = async (
+  limit = 50,
+  offset = 0,
+  search = '',
+  from = null,
+  to = null,
+  severity = [],
+  facility = [],
+  logic = 'and',
+  useRegex = false,
+  callback
+) => {
+  let query = `SELECT * FROM logs WHERE 1=1`;
+  const values = [];
+  let count = 1;
+
+  const conditions = [];
+
+  if (search) {
+    if (useRegex) {
+      conditions.push(`(message ~* $${count} OR hostname ~* $${count})`);
+      values.push(search);
+    } else {
+      conditions.push(`(message ILIKE $${count} OR hostname ILIKE $${count})`);
+      values.push(`%${search}%`);
+    }
+    count++;
+  }
 
   if (from && to) {
-    query += ` AND received_at BETWEEN $${count++} AND $${count++}`;
+    conditions.push(`received_at BETWEEN $${count} AND $${count + 1}`);
     values.push(from, to);
+    count += 2;
   }
 
-  if (severity) {
-    query += ` AND severity = $${count++}`;
+  if (severity.length > 0) {
+    conditions.push(`severity = ANY($${count})`);
     values.push(severity);
+    count++;
   }
 
-  if (facility) {
-    query += ` AND facility = $${count++}`;
+  if (facility.length > 0) {
+    conditions.push(`facility = ANY($${count})`);
     values.push(facility);
+    count++;
+  }
+
+  // Join conditions using AND or OR
+  const logicJoiner = logic === 'or' ? ' OR ' : ' AND ';
+  if (conditions.length > 0) {
+    query += ` AND (` + conditions.join(logicJoiner) + `)`;
   }
 
   query += ` ORDER BY received_at DESC LIMIT $${count++} OFFSET $${count++}`;
   values.push(limit, offset);
+
+
 
   try {
     const result = await pool.query(query, values);

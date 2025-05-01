@@ -8,6 +8,7 @@ const UserManagementPage = () => {
   const [role, setRole] = useState("viewer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const fetchUsers = async () => {
     try {
@@ -32,6 +33,7 @@ const UserManagementPage = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({}); // Reset field-specific errors
 
     try {
       const res = await fetch("/api/users", {
@@ -44,16 +46,39 @@ const UserManagementPage = () => {
       });
 
       const data = await res.json();
-      if (!res.ok) return setError(data.error || "Create failed");
 
+      if (!res.ok) {
+        // Handle multiple validation errors from backend
+        if (data.errors) {
+          const fieldSpecific = {};
+          const generalErrors = [];
+
+          for (const err of data.errors) {
+            if (err.toLowerCase().includes("username")) fieldSpecific.username = err;
+            else if (err.toLowerCase().includes("password")) fieldSpecific.password = err;
+            else if (err.toLowerCase().includes("role")) fieldSpecific.role = err;
+            else generalErrors.push(err);
+          }
+
+          setFieldErrors(fieldSpecific);
+          if (generalErrors.length) setError(generalErrors.join("\n"));
+        } else {
+          setError(data.error || "Create failed");
+        }
+        return;
+      }
+
+      // Reset form and reload users
       setUsername("");
       setPassword("");
       setRole("viewer");
+      setFieldErrors({});
       fetchUsers();
     } catch {
       setError("Error creating user.");
     }
   };
+
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure to delete this user?")) return;
@@ -78,29 +103,38 @@ const UserManagementPage = () => {
       <form onSubmit={handleCreate} className="mb-6 bg-white p-4 rounded shadow space-y-4">
         {error && <p className="text-red-600">{error}</p>}
         <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="Username"
-            className="p-2 border rounded w-1/3"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="p-2 border rounded w-1/3"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <select
-            className="p-2 border rounded w-1/3"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="admin">admin</option>
-            <option value="operator">operator</option>
-            <option value="viewer">viewer</option>
-          </select>
+          <div className="w-1/3">
+            <input
+              type="text"
+              placeholder="Username"
+              className={`p-2 border rounded w-full ${fieldErrors.username ? 'border-red-500' : ''}`}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            {fieldErrors.username && <p className="text-sm text-red-600">{fieldErrors.username}</p>}
+          </div>
+          <div className="w-1/3">
+            <input
+              type="password"
+              placeholder="Password"
+              className={`p-2 border rounded w-full ${fieldErrors.password ? 'border-red-500' : ''}`}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {fieldErrors.password && <p className="text-sm text-red-600">{fieldErrors.password}</p>}
+          </div>
+          <div className="w-1/3">
+            <select
+              className={`p-2 border rounded w-full ${fieldErrors.role ? 'border-red-500' : ''}`}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <option value="admin">admin</option>
+              <option value="operator">operator</option>
+              <option value="viewer">viewer</option>
+            </select>
+            {fieldErrors.role && <p className="text-sm text-red-600">{fieldErrors.role}</p>}
+          </div>
         </div>
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
           ➕ Create User

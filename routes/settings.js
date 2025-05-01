@@ -5,7 +5,7 @@ const fs = require('fs');
 const router = express.Router();
 const path = require('path');
 const configPath = path.join(__dirname, '../config.json');
-const validateSettings = require('./validateSettings');
+const validateSettings = require('../middleware/validateSettings');
 const { requireAuth, requireRole } = require("../middleware/auth");
 
 // GET current settings
@@ -19,15 +19,9 @@ router.get('/',requireAuth, (req, res) => {
 });
 
 // POST update settings
-router.post('/', requireAuth, requireRole("admin"), (req, res) => {
+router.post('/', requireAuth, requireRole("admin"),validateSettings, (req, res) => {
   try {
-    const newSettings = req.body;
 
-    const errors = validateSettings(newSettings);
-
-    if (errors.length > 0) {
-      return res.status(400).json({ success: false, errors });
-    }
     fs.writeFileSync(configPath, JSON.stringify(req.body, null, 2));
     res.json({ message: 'Config updated successfully' });
   } catch (error) {

@@ -4,49 +4,67 @@ import Filters from "../components/Filters";
 import RealtimeNotice from "../components/RealtimeNotice";
 
 const EventsExplorerPage = () => {
-
   const [logs, setLogs] = useState([]);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [newLogNotice, setNewLogNotice] = useState(false);
-  const [severity, setSeverity] = useState('');
-  const [facility, setFacility] = useState('');
-
+  const [severityFilter, setSeverityFilter] = useState([]);
+  const [facilityFilter, setFacilityFilter] = useState([]);
+  const [logic, setLogic] = useState('and');
+  const [useRegex, setUseRegex] = useState(false);
+  const [error, setError] = useState('');
 
   const limit = 20;
 
-  const fetchLogs = async (page, search, from, to, severity, facility) => {
-    let url = `/logs?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
-    if (from) url += `&from=${encodeURIComponent(from)}`;
-    if (to) url += `&to=${encodeURIComponent(to)}`;
-    if (severity) url += `&severity=${encodeURIComponent(severity)}`;
-    if (facility) url += `&facility=${encodeURIComponent(facility)}`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-    setLogs(data);
-    setNewLogNotice(false);
+  const fetchLogs = async (page, search, from, to, severity, facility, logic, regex) => {
+    setError(""); // Clear existing error
+    try {
+      const params = new URLSearchParams();
+      params.append("page", page);
+      params.append("limit", limit);
+      if (search) params.append("search", search);
+      if (from) params.append("from", from);
+      if (to) params.append("to", to);
+      if (severity.length) severity.forEach(s => params.append("severity", s));
+      if (facility.length) facility.forEach(f => params.append("facility", f));
+      if (logic) params.append("logic", logic);
+      if (regex) params.append("regex", regex);
+  
+      const res = await fetch(`/logs?${params.toString()}`);
+      const data = await res.json();
+  
+      if (!res.ok) {
+        setLogs([]);
+        setError(data.error || "Unknown error occurred.");
+      } else {
+        setLogs(data);
+        setNewLogNotice(false);
+      }
+    } catch (err) {
+      setError("Failed to fetch logs.");
+    }
   };
 
   useEffect(() => {
-    fetchLogs(page, search, from, to, severity, facility);
+    fetchLogs(page, search, from, to, severityFilter, facilityFilter, logic, useRegex);
   }, [page]);
-
 
   const handleReset = () => {
     setSearch('');
     setFrom('');
     setTo('');
+    setSeverityFilter([]);
+    setFacilityFilter([]);
+    setLogic('and');
+    setUseRegex(false);
     setPage(1);
-    setFacility('');
-    setSeverity('');
-    fetchLogs(1, '', '', '');
+    fetchLogs(1, '', '', '', [], [], 'and', false);
   };
 
   const handleFilter = () => {
-    fetchLogs(1, search, from, to, severity, facility);
+    fetchLogs(1, search, from, to, severityFilter, facilityFilter, logic, useRegex);
     setPage(1);
   };
 
@@ -56,25 +74,16 @@ const EventsExplorerPage = () => {
       return;
     }
 
-    // Create CSV header
     const header = ["Severity", "Facility", "Hostname", "IP Address", "Message", "Date"];
-
-    // Map logs to CSV rows
     const rows = logs.map(log => [
       log.severity,
       log.facility,
       log.hostname,
       log.host_address,
-      log.message.replace(/"/g, '""'), // Escape quotes
+      log.message.replace(/"/g, '""'),
       log.received_at || log.date
     ]);
-
-    // Combine header + rows
-    const csvContent = [header, ...rows]
-      .map(row => row.map(field => `"${field}"`).join(",")) // Wrap each field in quotes
-      .join("\n");
-
-    // Create blob and trigger download
+    const csvContent = [header, ...rows].map(row => row.map(field => `"${field}"`).join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -90,18 +99,14 @@ const EventsExplorerPage = () => {
       <h1 className="text-3xl font-bold mb-6 text-gray-800">🔎 Events Explorer</h1>
 
       <Filters
-        search={search}
-        setSearch={setSearch}
-        from={from}
-        setFrom={setFrom}
-        to={to}
-        setTo={setTo}
-        onReset={handleReset}
-        onFilter={handleFilter}
-        severity={severity}
-        setSeverity={setSeverity}
-        facility={facility}
-        setFacility={setFacility}
+        search={search} setSearch={setSearch}
+        from={from} setFrom={setFrom}
+        to={to} setTo={setTo}
+        severityFilter={severityFilter} setSeverityFilter={setSeverityFilter}
+        facilityFilter={facilityFilter} setFacilityFilter={setFacilityFilter}
+        logic={logic} setLogic={setLogic}
+        useRegex={useRegex} setUseRegex={setUseRegex}
+        onReset={handleReset} onFilter={handleFilter}
       />
 
       <RealtimeNotice visible={newLogNotice} onRefresh={handleReset} />
@@ -109,9 +114,14 @@ const EventsExplorerPage = () => {
       <button
         onClick={downloadCSV}
         className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded mb-4"
-      >
-        📥 Download CSV
-      </button>
+      >📥 Download CSV</button>
+
+      {error && (
+        <div className="text-red-600 mb-4 bg-red-100 p-3 rounded border border-red-300">
+          ⚠️ {error}
+        </div>
+      )}
+
       <LogTable logs={logs} />
 
       <div className="mt-6 flex items-center gap-6">

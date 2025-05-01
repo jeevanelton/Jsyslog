@@ -1,77 +1,113 @@
-import React from "react";
+// 📦 Filters.js - Advanced Filters UI
 
-const Filters = ({ search, setSearch, from, setFrom, to, setTo, severity, setSeverity, facility, setFacility, onReset, onFilter }) => {
+import React, { useState } from "react";
+
+const SEVERITY_OPTIONS = ["emerg", "alert", "crit", "err", "warning", "notice", "info", "debug"];
+const FACILITY_OPTIONS = [
+  "auth", "authpriv", "cron", "daemon", "kern", "local0", "local1", "local2",
+  "local3", "local4", "local5", "local6", "local7", "mail", "syslog", "user"
+];
+
+const Filters = ({
+  search, setSearch,
+  from, setFrom,
+  to, setTo,
+  severityFilter, setSeverityFilter,
+  facilityFilter, setFacilityFilter,
+  logic, setLogic,
+  useRegex, setUseRegex,
+  onReset, onFilter
+}) => {
+  const toggleSelection = (value, list, setList) => {
+    setList(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]);
+  };
+
   return (
-    <div className="mb-6 space-y-4">
-      <div className="flex flex-wrap gap-4">
+    <div className="bg-white p-4 rounded shadow mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        {/* Search field */}
         <input
           type="text"
-          placeholder="Search logs..."
+          placeholder="Search message or hostname"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border p-2 rounded w-full sm:w-64"
+          className="border p-2 rounded w-full"
         />
 
-        <select
-          value={severity}
-          onChange={(e) => setSeverity(e.target.value)}
-          className="border p-2 rounded w-full sm:w-40"
-        >
-          <option value="">All Severities</option>
-          <option value="emerg">emerg</option>
-          <option value="alert">alert</option>
-          <option value="crit">crit</option>
-          <option value="err">err</option>
-          <option value="warning">warning</option>
-          <option value="notice">notice</option>
-          <option value="info">info</option>
-          <option value="debug">debug</option>
-        </select>
-
-        <select
-          value={facility}
-          onChange={(e) => setFacility(e.target.value)}
-          className="border p-2 rounded w-full sm:w-40"
-        >
-          <option value="">All Facilities</option>
-          <option value="auth">auth</option>
-          <option value="mail">mail</option>
-          <option value="daemon">daemon</option>
-          <option value="kern">kern</option>
-          <option value="user">user</option>
-          <option value="local0">local0</option>
-          <option value="local1">local1</option>
-          <option value="local2">local2</option>
-          <option value="local3">local3</option>
-          <option value="local4">local4</option>
-          <option value="local5">local5</option>
-          <option value="local6">local6</option>
-          <option value="local7">local7</option>
-        </select>
-      </div>
-
-      <div className="flex gap-4 flex-wrap">
+        {/* Date range */}
         <input
           type="datetime-local"
           value={from}
           onChange={(e) => setFrom(e.target.value)}
-          className="border p-2 rounded w-full sm:w-56"
+          className="border p-2 rounded w-full"
         />
         <input
           type="datetime-local"
           value={to}
           onChange={(e) => setTo(e.target.value)}
-          className="border p-2 rounded w-full sm:w-56"
+          className="border p-2 rounded w-full"
         />
+
+        {/* Severity filter */}
+        <div>
+          <label className="text-sm font-medium">Severity</label>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {SEVERITY_OPTIONS.map(opt => (
+              <button
+                key={opt}
+                onClick={() => toggleSelection(opt, severityFilter, setSeverityFilter)}
+                className={`px-2 py-1 rounded text-sm border ${
+                  severityFilter.includes(opt) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'
+                }`}
+              >{opt}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Facility filter */}
+        <div>
+          <label className="text-sm font-medium">Facility</label>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {FACILITY_OPTIONS.map(opt => (
+              <button
+                key={opt}
+                onClick={() => toggleSelection(opt, facilityFilter, setFacilityFilter)}
+                className={`px-2 py-1 rounded text-sm border ${
+                  facilityFilter.includes(opt) ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800'
+                }`}
+              >{opt}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Toggles */}
+        <div className="flex gap-4 mt-4">
+          <label className="flex items-center gap-2">
+            <input type="checkbox" checked={useRegex} onChange={(e) => setUseRegex(e.target.checked)} />
+            <span className="text-sm">Regex</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <select value={logic} onChange={(e) => setLogic(e.target.value)} className="border rounded p-1 text-sm">
+              <option value="and">AND</option>
+              <option value="or">OR</option>
+            </select>
+            <span className="text-sm">Logic</span>
+          </label>
+        </div>
       </div>
 
-      <div className="flex gap-4">
-        <button onClick={onFilter} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-          Apply Filter
-        </button>
-        <button onClick={onReset} className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded">
-          Reset
-        </button>
+      {/* Action Buttons */}
+      <div className="mt-4 flex gap-4">
+        <button
+          onClick={onFilter}
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+        >Apply Filters</button>
+
+        <button
+          onClick={onReset}
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded"
+        >Reset</button>
       </div>
     </div>
   );
