@@ -1,21 +1,17 @@
 require('dotenv').config();
 const express = require('express');
-//const http = require('http');
-const db = require('../db');
+const http = require('http');
+//const db = require('../db');
 const path = require('path');
 const app = express();
 //const server = http.createServer(app);
 const { Server } = require('socket.io');
-//const io = new Server(server);
+const server = http.createServer(app);
+const io = new Server(server);
 const PORT = 3000;
 const cors = require("cors");
-const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
-  cors: {
-    origin: "*", // React dev server
-    methods: ["GET", "POST"]
-  }
-});
+//const http = require('http').createServer(app);
+//const io = require('socket.io')(http);
 const syslog = require('./syslog');
 const { cleanupOldLogs } = require('./retention');
 const settingsRouter = require('../routes/settings');
@@ -51,7 +47,11 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/admin', adminRouter.router);
 app.use('/logs',logsRouter)
 
-
+// Serve React frontend (after build)
+// app.use(express.static(path.join(__dirname, '../frontend/build')));
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+// });
 
 io.on('connection', (socket) => {
   console.log(`🧠 Client connected: ${socket.id}`);
@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
   });
 });
 
-http.listen(PORT,"0.0.0.0", () => {
+server.listen(PORT,"0.0.0.0", () => {
   console.log(`🌐 Web UI: http://0.0.0.0:${PORT}`);
 });
 

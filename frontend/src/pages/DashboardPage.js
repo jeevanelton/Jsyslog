@@ -5,7 +5,7 @@ import LogsSecChart from "../components/LogsSecChart";
 
 
 
-const socket = io("http://192.168.1.204:3000");
+const socket = io();
 
 const DashboardPage = () => {
   const [logs, setLogs] = useState([]);

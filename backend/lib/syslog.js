@@ -7,7 +7,7 @@ const net = require('net');
 const { incrementLogCounter } = require('./metrics');
 const server = dgram.createSocket('udp4');
 //const configPath = path.join(__dirname, '../config.json');
-const { getConfig } = require('../lib/config'); 
+const { getConfig } = require('./config'); 
 
 
 module.exports = function (io) {

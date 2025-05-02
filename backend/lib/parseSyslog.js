@@ -18,15 +18,27 @@ function parsePriority(priVal) {
 }
 
 function parseDate(dateStr) {
+   
+  
+    // Normalize spaces: collapse multiple spaces to one
+    dateStr = dateStr.trim().replace(/\s+/g, " ");
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const now = new Date();
-    const parts = dateStr.split(" ");
+    const parts = dateStr.split(" "); // Now always ["May", "1", "22:48:00"]
+  
     const month = months.indexOf(parts[0]);
     const day = parseInt(parts[1]);
     const time = parts[2].split(":");
+  
+    if (month === -1 || isNaN(day) || time.length !== 3) {
+      console.warn("⚠️ Invalid date format:", dateStr);
+      return new Date().toISOString().replace("T", " ").slice(0, 19);
+    }
+  
     const dt = new Date(now.getFullYear(), month, day, ...time.map(Number));
     return dt.toISOString().replace("T", " ").slice(0, 19);
-}
+  }
+  
 
 function parseSyslog(line, rinfo = {}) {
     const match3164 = line.match(/^<(\d+)>(\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(\S+)\s+([^:]+):\s*([\s\S]*)$/);

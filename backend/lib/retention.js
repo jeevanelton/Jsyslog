@@ -3,13 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, '../config.json'), 'utf8'));
-const pool = new Pool({
-  user: 'jsyslogd',
-  host: 'localhost',
-  database: 'syslog_db',
-  password: 'secretpass',
-  port: 5432,
-});
+const pool = new Pool();
 
 async function cleanupOldLogs() {
   const days = config.retain_days || 30;

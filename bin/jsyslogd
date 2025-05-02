@@ -1,3 +1,0 @@
-#!/bin/bash
-node /opt/jsyslogd/lib/server.js &
-node /opt/jsyslogd/lib/syslog.js &
