@@ -6,8 +6,6 @@
   "directories": {
     "lib": "lib"
   },
-
-
   "scripts": {
     "start": "node backend/index.js",
     "build": "npm --prefix frontend run build",
@@ -20,7 +18,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^13.5.0",
     "bcrypt": "^5.1.1",
+    "chart.js": "^4.4.9",
     "cors": "^2.8.5",
     "dgram": "^1.0.1",
     "dotenv": "^16.5.0",
@@ -28,19 +32,15 @@
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^3.0.3",
     "pg": "^8.14.1",
-    "socket.io": "^4.8.1",
-    "sqlite3": "^5.1.7",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
-    "chart.js": "^4.4.9",
     "react": "^19.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.5.2",
     "react-scripts": "5.0.1",
+    "react-select": "^5.10.1",
+    "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
+    "sqlite3": "^5.1.7",
     "web-vitals": "^2.1.4"
   },
   "eslintConfig": {
@@ -62,10 +62,10 @@
     ]
   },
   "devDependencies": {
-    "nodemon": "^3.1.9",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.9",
     "postcss": "^8.5.3",
-    "tailwindcss": "^3.4.1",
-    "concurrently": "^8.2.2"
+    "tailwindcss": "^3.4.1"
   }
 }

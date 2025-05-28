@@ -85,28 +85,30 @@ const DashboardPage = () => {
       {/* Server Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-lg font-bold">🧠 Logs/sec</h2>
-          <p className="text-2xl">{stats.logsPerSecond}</p>
+          <div className="bg-white p-4 rounded shadow">
+            <h2 className="text-lg font-bold">🧠 Logs/sec</h2>
+            <p className="text-2xl">{stats.logsPerSecond}</p>
+          </div>
+          <div className="bg-white p-4 rounded shadow">
+            <h2 className="text-lg font-bold">📂 Total Logs</h2>
+            <p className="text-2xl">{stats.totalLogs}</p>
+          </div>
+          <div className="bg-white p-4 rounded shadow">
+            <h2 className="text-lg font-bold">⏳ Uptime</h2>
+            <p className="text-2xl">{Math.floor(stats.uptime / 60)} min</p>
+          </div>
+          <div className={`p-4 rounded shadow ${getStatusColor(stats.cpu)}`}>
+            <h2 className="text-lg font-bold">🖥️ CPU Usage</h2>
+            <p className="text-2xl">{stats.cpu}%</p>
+          </div>
+          <div className={`p-4 rounded shadow ${getStatusColor(stats.memory)}`}>
+            <h2 className="text-lg font-bold">💾 Memory Usage</h2>
+            <p className="text-2xl">{stats.memory}%</p>
+          </div>
         </div>
         <div className="bg-white p-4 rounded shadow mb-6">
           <h2 className="text-lg font-bold mb-2">📈 Logs/sec Trend (Last 1 min)</h2>
           <LogsSecChart dataPoints={logsPerSecHistory} />
-        </div>
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-lg font-bold">📂 Total Logs</h2>
-          <p className="text-2xl">{stats.totalLogs}</p>
-        </div>
-        <div className="bg-white p-4 rounded shadow">
-          <h2 className="text-lg font-bold">⏳ Uptime</h2>
-          <p className="text-2xl">{Math.floor(stats.uptime / 60)} min</p>
-        </div>
-        <div className={`p-4 rounded shadow ${getStatusColor(stats.cpu)}`}>
-          <h2 className="text-lg font-bold">🖥️ CPU Usage</h2>
-          <p className="text-2xl">{stats.cpu}%</p>
-        </div>
-        <div className={`p-4 rounded shadow ${getStatusColor(stats.memory)}`}>
-          <h2 className="text-lg font-bold">💾 Memory Usage</h2>
-          <p className="text-2xl">{stats.memory}%</p>
         </div>
       </div>
 

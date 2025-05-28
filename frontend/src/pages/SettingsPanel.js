@@ -1,4 +1,26 @@
 import React, { useEffect, useState } from "react";
+import Select from "react-select";
+import makeAnimated from "react-select/animated";
+
+const animatedComponents = makeAnimated();
+
+const SEVERITY_OPTIONS = [
+  { value: "emerg", label: "emerg" },
+  { value: "alert", label: "alert" },
+  { value: "crit", label: "crit" },
+  { value: "err", label: "err" },
+  { value: "warning", label: "warning" },
+  { value: "notice", label: "notice" },
+  { value: "info", label: "info" },
+  { value: "debug", label: "debug" },
+];
+
+const FACILITY_OPTIONS = [
+  "kern", "user", "mail", "daemon", "auth", "syslog", "lpr", "news",
+  "uucp", "cron", "authpriv", "ftp", "ntp", "security", "console", "solaris-cron",
+  "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7"
+].map(f => ({ value: f, label: f }));
+
 
 const SettingsPanel = () => {
   const [settings, setSettings] = useState(null);
@@ -10,7 +32,7 @@ const SettingsPanel = () => {
 
 
   useEffect(() => {
-    fetch("/api/settings",{
+    fetch("/api/settings", {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("token")}`,
       },
@@ -18,7 +40,7 @@ const SettingsPanel = () => {
       .then((res) => res.json())
       .then((data) => {
         setSettings(data);
-        setAllowedHostsInput(data.allowed_hosts?.join(", ") || ""); 
+        setAllowedHostsInput(data.allowed_hosts?.join(", ") || "");
         setLoading(false);
       })
       .catch((err) => {
@@ -34,30 +56,18 @@ const SettingsPanel = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token")}` 
+          "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: JSON.stringify(settings),
       });
       const data = await res.json();
 
       if (!res.ok) {
-        const fieldSpecific = {};
-        const generalErrors = [];
 
-        for (const err of data.errors) {
-          if (err.toLowerCase().includes("ip") || err.toLowerCase().includes("allowed")) {
-            fieldSpecific.allowed_hosts = err;
-          } else {
-            generalErrors.push(err);
-          }
-        }
+        setFieldErrors(data.errors[0]);
 
-        setFieldErrors(fieldSpecific);
 
-        if (generalErrors.length) {
-          alert("Validation error:\n" + generalErrors.join("\n"));
-        }
-         
+
         setSaving(false);
         return; // Stop execution
       } else {
@@ -110,8 +120,13 @@ const SettingsPanel = () => {
               type="number"
               value={settings.port_udp}
               onChange={(e) => setSettings({ ...settings, port_udp: parseInt(e.target.value) })}
-              className="w-full mt-1 p-2 border rounded"
+              className={`w-full mt-1 p-2 border rounded ${fieldErrors.udpError ? "border-red-500" : "border-gray-300"
+                }`}
             />
+            {fieldErrors.udpError && (
+              <p className="text-sm text-red-600 mt-1">{fieldErrors.udpError}</p>
+            )}
+
           </div>
           <div className="flex-1">
             <label className="block text-sm font-medium">TCP Port</label>
@@ -119,8 +134,13 @@ const SettingsPanel = () => {
               type="number"
               value={settings.port_tcp}
               onChange={(e) => setSettings({ ...settings, port_tcp: parseInt(e.target.value) })}
-              className="w-full mt-1 p-2 border rounded"
+              className={`w-full mt-1 p-2 border rounded ${fieldErrors.tcpError ? "border-red-500" : "border-gray-300"
+                }`}
             />
+            {fieldErrors.tcpError && (
+              <p className="text-sm text-red-600 mt-1">{fieldErrors.tcpError}</p>
+            )}
+
           </div>
         </div>
 
@@ -142,8 +162,12 @@ const SettingsPanel = () => {
             type="number"
             value={settings.retain_days}
             onChange={(e) => setSettings({ ...settings, retain_days: parseInt(e.target.value) })}
-            className="w-full mt-1 p-2 border rounded"
+            className={`w-full mt-1 p-2 border rounded ${fieldErrors.retainDaysError ? "border-red-500" : "border-gray-300"
+              }`}
           />
+          {fieldErrors.retainDaysError && (
+            <p className="text-sm text-red-600 mt-1">{fieldErrors.retainDaysError}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium mb-1">
@@ -168,12 +192,12 @@ const SettingsPanel = () => {
               }));
             }}
             placeholder="192.168.1.10, 192.168.1.11"
-            className={`w-full mt-1 p-2 border rounded ${fieldErrors.allowed_hosts ? "border-red-500" : "border-gray-300"
+            className={`w-full mt-1 p-2 border rounded ${fieldErrors.allowedHostsError ? "border-red-500" : "border-gray-300"
               }`}
           />
 
-          {fieldErrors.allowed_hosts && (
-            <p className="text-sm text-red-600 mt-1">{fieldErrors.allowed_hosts}</p>
+          {fieldErrors.allowedHostsError && (
+            <p className="text-sm text-red-600 mt-1">{fieldErrors.allowedHostsError}</p>
           )}
 
           <p className="text-xs text-gray-500 mt-1">
@@ -183,14 +207,143 @@ const SettingsPanel = () => {
 
 
 
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded mt-4"
-        >
-          {saving ? "Saving..." : "Save Settings"}
-        </button>
+
       </div>
+      <div className="border-t pt-4 mt-4">
+        <h3 className="text-lg font-semibold mb-2">🔁 Log Forwarding</h3>
+
+        <label className="flex items-center space-x-2 mb-2">
+          <input
+            type="checkbox"
+            checked={settings.forwarding?.enabled || false}
+            onChange={(e) =>
+              setSettings((prev) => ({
+                ...prev,
+                forwarding: { ...prev.forwarding, enabled: e.target.checked }
+              }))
+            }
+            className="h-4 w-4"
+          />
+          <span>Enable Log Forwarding</span>
+        </label>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">Protocol</label>
+            <select
+              value={settings.forwarding?.protocol || "udp"}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  forwarding: { ...prev.forwarding, protocol: e.target.value }
+                }))
+              }
+              className="w-full mt-1 p-2 border rounded"
+            >
+              <option value="udp">UDP</option>
+              <option value="tcp">TCP</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Target Host</label>
+            <input
+              type="text"
+              value={settings.forwarding?.target_host || ""}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  forwarding: { ...prev.forwarding, target_host: e.target.value }
+                }))
+              }
+              className={`w-full mt-1 p-2 border rounded ${fieldErrors.forwardingTargetHostError ? "border-red-500" : "border-gray-300"
+                }`}
+            />
+
+            {fieldErrors.forwardingTargetHostError && (
+              <p className="text-sm text-red-600 mt-1">{fieldErrors.forwardingTargetHostError}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Target Port</label>
+            <input
+              type="number"
+              value={settings.forwarding?.target_port || 514}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  forwarding: { ...prev.forwarding, target_port: parseInt(e.target.value) }
+                }))
+              }
+              className={`w-full mt-1 p-2 border rounded ${fieldErrors.forwardingTargetPortError ? "border-red-500" : "border-gray-300"
+                }`}
+            />
+
+            {fieldErrors.forwardingTargetPortError && (
+              <p className="text-sm text-red-600 mt-1">{fieldErrors.forwardingTargetPortError}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Severity Filter</label>
+            <Select
+              isMulti
+              closeMenuOnSelect={false}
+              className="w-full mt-1 p-2 border rounded"
+              components={animatedComponents}
+              options={SEVERITY_OPTIONS}
+              value={(settings.forwarding?.filter?.severity || []).map(val => ({ value: val, label: val }))}
+              onChange={(selected) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  forwarding: {
+                    ...prev.forwarding,
+                    filter: {
+                      ...prev.forwarding?.filter,
+                      severity: selected.map((s) => s.value),
+                    },
+                  },
+                }))
+              }
+            />
+
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Facility Filter</label>
+            <Select
+              isMulti
+              closeMenuOnSelect={false}
+              components={animatedComponents}
+              className="w-full mt-1 p-2 border rounded"
+              options={FACILITY_OPTIONS}
+              value={(settings.forwarding?.filter?.facility || []).map(val => ({ value: val, label: val }))}
+              onChange={(selected) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  forwarding: {
+                    ...prev.forwarding,
+                    filter: {
+                      ...prev.forwarding?.filter,
+                      facility: selected.map((f) => f.value),
+                    },
+                  },
+                }))
+              }
+            />
+
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded mt-4"
+          >
+            {saving ? "Saving..." : "Save Settings"}
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 };

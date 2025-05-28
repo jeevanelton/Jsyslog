@@ -20,6 +20,7 @@ module.exports = function (io) {
   server.on('message', (msg, rinfo) => {
     const logLine = msg.toString();
 
+    //console.log(`Received UDP log: ${logLine}`);
     // 🛡️ Check Allowed Hosts
     if (config.allowed_hosts && config.allowed_hosts.length > 0) {
       if (!config.allowed_hosts.includes(rinfo.address)) {

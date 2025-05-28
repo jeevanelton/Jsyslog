@@ -1,11 +1,10 @@
-// 📦 Filters.js - Advanced Filters UI
-
-import React, { useState } from "react";
+import React from "react";
 
 const SEVERITY_OPTIONS = ["emerg", "alert", "crit", "err", "warning", "notice", "info", "debug"];
 const FACILITY_OPTIONS = [
-  "auth", "authpriv", "cron", "daemon", "kern", "local0", "local1", "local2",
-  "local3", "local4", "local5", "local6", "local7", "mail", "syslog", "user"
+  "kern", "user", "mail", "daemon", "auth", "syslog", "lpr", "news",
+  "uucp", "cron", "authpriv", "ftp", "ntp", "security", "console", "solaris-cron",
+  "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7", "device"
 ];
 
 const Filters = ({
@@ -23,91 +22,119 @@ const Filters = ({
   };
 
   return (
-    <div className="bg-white p-4 rounded shadow mb-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-        {/* Search field */}
+    <div className="bg-white p-6 rounded shadow mb-6 space-y-4">
+      {/* 🔍 Search */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Search (Message or Hostname)</label>
         <input
           type="text"
-          placeholder="Search message or hostname"
+          placeholder="e.g. kernel panic"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="border p-2 rounded w-full"
         />
+      </div>
 
-        {/* Date range */}
-        <input
-          type="datetime-local"
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
-          className="border p-2 rounded w-full"
-        />
-        <input
-          type="datetime-local"
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          className="border p-2 rounded w-full"
-        />
-
-        {/* Severity filter */}
+      {/* 📅 Date Range */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-sm font-medium">Severity</label>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {SEVERITY_OPTIONS.map(opt => (
-              <button
-                key={opt}
-                onClick={() => toggleSelection(opt, severityFilter, setSeverityFilter)}
-                className={`px-2 py-1 rounded text-sm border ${
-                  severityFilter.includes(opt) ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'
-                }`}
-              >{opt}</button>
-            ))}
-          </div>
+          <label className="block text-sm font-medium mb-1">From</label>
+          <input
+            type="datetime-local"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="border p-2 rounded w-full"
+          />
         </div>
-
-        {/* Facility filter */}
         <div>
-          <label className="text-sm font-medium">Facility</label>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {FACILITY_OPTIONS.map(opt => (
-              <button
-                key={opt}
-                onClick={() => toggleSelection(opt, facilityFilter, setFacilityFilter)}
-                className={`px-2 py-1 rounded text-sm border ${
-                  facilityFilter.includes(opt) ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800'
-                }`}
-              >{opt}</button>
-            ))}
-          </div>
-        </div>
-
-        {/* Toggles */}
-        <div className="flex gap-4 mt-4">
-          <label className="flex items-center gap-2">
-            <input type="checkbox" checked={useRegex} onChange={(e) => setUseRegex(e.target.checked)} />
-            <span className="text-sm">Regex</span>
-          </label>
-          <label className="flex items-center gap-2">
-            <select value={logic} onChange={(e) => setLogic(e.target.value)} className="border rounded p-1 text-sm">
-              <option value="and">AND</option>
-              <option value="or">OR</option>
-            </select>
-            <span className="text-sm">Logic</span>
-          </label>
+          <label className="block text-sm font-medium mb-1">To</label>
+          <input
+            type="datetime-local"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="border p-2 rounded w-full"
+          />
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="mt-4 flex gap-4">
+      {/* 🚨 Severity Tags */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Severity (Multi-select)</label>
+        <div className="flex flex-wrap gap-2">
+          {SEVERITY_OPTIONS.map(opt => (
+            <button
+              key={opt}
+              onClick={() => toggleSelection(opt, severityFilter, setSeverityFilter)}
+              className={`px-3 py-1 rounded text-xs border transition ${
+                severityFilter.includes(opt)
+                  ? 'bg-blue-600 text-white border-blue-600'
+                  : 'bg-gray-100 text-gray-800 border-gray-300'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* 🏢 Facility Tags */}
+      <div>
+        <label className="block text-sm font-medium mb-1">Facility (Multi-select)</label>
+        <div className="flex flex-wrap gap-2">
+          {FACILITY_OPTIONS.map(opt => (
+            <button
+              key={opt}
+              onClick={() => toggleSelection(opt, facilityFilter, setFacilityFilter)}
+              className={`px-3 py-1 rounded text-xs border transition ${
+                facilityFilter.includes(opt)
+                  ? 'bg-green-600 text-white border-green-600'
+                  : 'bg-gray-100 text-gray-800 border-gray-300'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ⚙️ Extra Options */}
+      <div className="flex flex-wrap gap-6 items-center pt-2">
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={useRegex}
+            onChange={(e) => setUseRegex(e.target.checked)}
+          />
+          Use Regex
+        </label>
+
+        <label className="flex items-center gap-2 text-sm">
+          Logic:
+          <select
+            value={logic}
+            onChange={(e) => setLogic(e.target.value)}
+            className="border rounded p-1"
+          >
+            <option value="and">AND</option>
+            <option value="or">OR</option>
+          </select>
+        </label>
+      </div>
+
+      {/* 🎛️ Actions */}
+      <div className="pt-4 flex gap-4">
         <button
           onClick={onFilter}
-          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-        >Apply Filters</button>
-
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-5 rounded"
+        >
+          🔍 Apply Filters
+        </button>
         <button
           onClick={onReset}
-          className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded"
-        >Reset</button>
+          className="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-5 rounded"
+        >
+          🔄 Reset
+        </button>
       </div>
     </div>
   );

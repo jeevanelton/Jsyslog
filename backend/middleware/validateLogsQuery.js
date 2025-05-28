@@ -5,10 +5,9 @@ const VALID_SEVERITIES = [
   ];
   
   const VALID_FACILITIES = [
-    "kern", "user", "mail", "daemon", "auth", "syslog", "lpr", "news", "uucp",
-    "cron", "authpriv", "ftp", "ntp", "security", "console", "solaris-cron",
-    "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7",
-    "device" // custom addition
+      "kern", "user", "mail", "daemon", "auth", "syslog", "lpr", "news",
+    "uucp", "cron", "authpriv", "ftp", "ntp", "security", "console", "solaris-cron",
+    "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7" // custom addition
   ];
   
   module.exports = function validateLogsQuery(req, res, next) {

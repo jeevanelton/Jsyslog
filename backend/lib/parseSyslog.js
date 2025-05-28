@@ -41,6 +41,9 @@ function parseDate(dateStr) {
   
 
 function parseSyslog(line, rinfo = {}) {
+
+    
+
     const match3164 = line.match(/^<(\d+)>(\w{3}\s+\d+\s+\d+:\d+:\d+)\s+(\S+)\s+([^:]+):\s*([\s\S]*)$/);
     if (match3164) {
         const [, pri, timestamp, hostname, tag, msg] = match3164;

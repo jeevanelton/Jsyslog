@@ -5,20 +5,27 @@ function isValidIPv4(ip) {
   return regex.test(ip);
 }
 
+const VALID_SEVERITIES = ["emerg", "alert", "crit", "err", "warning", "notice", "info", "debug"];
+const VALID_FACILITIES = [
+    "kern", "user", "mail", "daemon", "auth", "syslog", "lpr", "news",
+    "uucp", "cron", "authpriv", "ftp", "ntp", "security", "console", "solaris-cron",
+    "local0", "local1", "local2", "local3", "local4", "local5", "local6", "local7"
+];
+
 function validateSettingsMiddleware(req, res, next) {
   const data = req.body;
   const errors = [];
 
   if (typeof data.port_udp !== "number" || data.port_udp < 1 || data.port_udp > 65535) {
-    errors.push("UDP port must be a number between 1 and 65535");
+    errors.push({...errors,udpError:"UDP port must be a number between 1 and 65535"});
   }
 
   if (typeof data.port_tcp !== "number" || data.port_tcp < 1 || data.port_tcp > 65535) {
-    errors.push("TCP port must be a number between 1 and 65535");
+    errors.push({...errors,tcpError:"TCP port must be a number between 1 and 65535"});
   }
 
   if (!Number.isInteger(data.retain_days) || data.retain_days < 0) {
-    errors.push("Retention days must be a positive integer");
+    errors.push({...errors,retainDaysError:"Retention days must be a positive integer"});
   }
 
   if (
@@ -26,15 +33,50 @@ function validateSettingsMiddleware(req, res, next) {
     typeof data.listen_tcp !== "boolean" ||
     typeof data.real_time !== "boolean"
   ) {
-    errors.push("listen_udp, listen_tcp, and real_time must be boolean values");
+    errors.push({...errors,booleanError:"listen_udp, listen_tcp, and real_time must be boolean values"});
   }
 
   if (!Array.isArray(data.allowed_hosts)) {
-    errors.push("allowed_hosts must be an array of IP addresses");
+    errors.push({...errors,allowedHostsError:"allowed_hosts must be an array of IP addresses"});
   } else {
     const invalid = data.allowed_hosts.filter((ip) => !isValidIPv4(ip));
     if (invalid.length) {
-      errors.push(`Invalid IP(s): ${invalid.join(", ")}`);
+      errors.push({...errors,allowedHostsError:`Invalid IP(s): ${invalid.join(", ")}`});
+    }
+  }
+
+  // ✅ Forwarding Validation
+  if (data.forwarding) {
+    const fwd = data.forwarding;
+
+    if (typeof fwd.enabled !== "boolean") {
+      errors.push({...errors,forwardingEnabledError:"Forwarding enabled must be a boolean"});
+    }
+
+    if (!["udp", "tcp"].includes(fwd.protocol)) {
+      errors.push({...errors,forwardingProtocolError:"Forwarding protocol must be either 'udp' or 'tcp'"});
+    }
+
+    if (!fwd.target_host || typeof fwd.target_host !== "string") {
+      errors.push({...errors,forwardingTargetHostError:"Forwarding target_host must be a valid hostname or IP"});
+    }
+
+    if (typeof fwd.target_port !== "number" || fwd.target_port < 1 || fwd.target_port > 65535) {
+      errors.push({...errors,forwardingTargetPortError:"Forwarding target_port must be a number between 1 and 65535"});
+    }
+
+    if (fwd.filter?.severity) {
+      const invalid = fwd.filter.severity.filter((s) => !VALID_SEVERITIES.includes(s));
+      if (invalid.length) {
+        errors.push({...errors,forwardingFilterSeverityError:`Forwarding filter severity invalid: ${invalid.join(", ")}`});
+      }
+    }
+
+    if (fwd.filter?.facility) {
+      const invalid = fwd.filter.facility.filter((f) => !VALID_FACILITIES.includes(f));
+      if (invalid.length) {
+        errors.push({...errors,forwardingFilterFacilityError:`Forwarding filter facility invalid: ${invalid.join(", ")}`});
+      }
     }
   }
 

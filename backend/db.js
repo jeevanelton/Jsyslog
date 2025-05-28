@@ -1,4 +1,5 @@
 const { Pool } = require('pg');
+const { forwardLog } = require('./lib/forwarder');
 
 const pool = new Pool({
   user: process.env.PGUSER,
@@ -94,6 +95,9 @@ exports.getLogs = async (
 
 
 exports.insertParsedLog = async (log, callback) => {
+
+  forwardLog(log);  // ✅ Forward the raw log to another syslog server
+  
   const query = `
     INSERT INTO logs (hostname, host_address, facility, severity, message, received_at, raw)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
