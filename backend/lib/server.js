@@ -20,7 +20,8 @@ const adminRouter = require('../routes/admin');
 const authRouter = require('../routes/auth');
 const usersRouter = require('../routes/users');
 const logsRouter = require('../routes/logs');
-
+const jwt = require("jsonwebtoken");
+const { socketAuthMiddleware } = require('../middleware/auth');
 
 // ✅ Parse incoming JSON bodies
 app.use(express.json());
@@ -53,11 +54,18 @@ app.use('/logs',logsRouter)
 //   res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
 // });
 
-io.on('connection', (socket) => {
-  console.log(`🧠 Client connected: ${socket.id}`);
-  socket.on('disconnect', () => {
+io.use(socketAuthMiddleware);
+
+// Handle socket connection
+io.on("connection", (socket) => {
+  console.log(`🧠 Authenticated socket connected: ${socket.id}`);
+  console.log("🔒 User info:", socket.user);
+
+  socket.on("disconnect", () => {
     console.log("❌ Socket.IO: Client disconnected");
   });
+
+  // Other event handlers (e.g., new-log, etc.)
 });
 
 server.listen(PORT,"0.0.0.0", () => {

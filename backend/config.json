@@ -14,7 +14,9 @@
     "target_host": "wewe",
     "target_port": 514,
     "filter": {
-      "severity": [],
+      "severity": [
+        "alert"
+      ],
       "facility": [
         "kern"
       ]

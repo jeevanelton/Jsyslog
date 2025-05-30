@@ -5,7 +5,11 @@ import LogsSecChart from "../components/LogsSecChart";
 
 
 
-const socket = io();
+const socket = io({
+  auth: {
+    token: localStorage.getItem("token")
+  }
+});
 
 const DashboardPage = () => {
   const [logs, setLogs] = useState([]);
@@ -38,6 +42,10 @@ const DashboardPage = () => {
 
     socket.on('disconnect', () => {
       console.log("❌ Disconnected from socket.io server");
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection failed:", err.message);
     });
 
     return () => {

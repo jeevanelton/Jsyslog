@@ -30,4 +30,21 @@ function requireRole(...allowedRoles) {
   };
 }
 
-module.exports = { requireAuth, requireRole };
+function socketAuthMiddleware (socket, next){
+  const token = socket.handshake.auth.token;
+
+  if (!token) {
+    return next(new Error("Authentication token is missing"));
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = user; // attach decoded user to socket object
+    next(); // allow connection
+  } catch (err) {
+    return next(new Error("Invalid or expired token"));
+  }
+};
+
+
+module.exports = { requireAuth, requireRole, socketAuthMiddleware };
