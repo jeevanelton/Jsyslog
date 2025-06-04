@@ -18,3 +18,8 @@ CREATE TABLE IF NOT EXISTS logs (
     raw TEXT
 );
 
+
+CREATE INDEX IF NOT EXISTS idx_logs_received_at ON logs(received_at);
+CREATE INDEX IF NOT EXISTS idx_logs_severity ON logs(severity);
+CREATE INDEX IF NOT EXISTS idx_logs_facility ON logs(facility);
+

@@ -19,9 +19,15 @@ directly on your machine.
 2. Browse to <http://localhost:3000> to access the web UI. Send syslog messages
    to port `514` (UDP or TCP).
 
+If you provide `HTTPS_KEY` and `HTTPS_CERT` environment variables pointing to a
+TLS key and certificate, the web interface will be served over HTTPS.
+
 Configuration options such as log retention and forwarding are defined in
 `backend/config.json`. To customise them when using Docker, provide your own
 version of this file as a volume mount.
+
+Multiple forwarding targets can be configured and TLS is supported by setting
+`protocol: "tls"` for a target.
 
 ## Manual installation
 
@@ -51,12 +57,16 @@ version of this file as a volume mount.
    npm start
    ```
 
+## Metrics
+
+Prometheus style metrics are available at `/metrics`.
+
 ## Testing
 
 Run the parser unit tests with:
 
 ```bash
-node backend/unit/testParseSyslog.js
+npm test
 ```
 
 ## License

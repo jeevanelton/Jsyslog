@@ -1,9 +1,11 @@
 // metrics.js
 
 let logCounter = 0;
+let totalLogs = 0;
 
 function incrementLogCounter() {
   logCounter++;
+  totalLogs++;
 }
 
 function readAndResetLogCounter() {
@@ -12,7 +14,12 @@ function readAndResetLogCounter() {
   return count;
 }
 
+function getTotalLogs() {
+  return totalLogs;
+}
+
 module.exports = {
   incrementLogCounter,
   readAndResetLogCounter,
+  getTotalLogs,
 };

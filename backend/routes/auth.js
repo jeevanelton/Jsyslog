@@ -64,4 +64,28 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// POST /api/reset-password
+router.post('/reset-password', async (req, res) => {
+  const { username, newPassword } = req.body;
+  if (!username || !newPassword) {
+    return res.status(400).json({ error: 'Missing username or new password' });
+  }
+
+  const hash = await bcrypt.hash(newPassword, 10);
+  try {
+    const result = await pool.query(
+      'UPDATE users SET password_hash=$1 WHERE username=$2 RETURNING id',
+      [hash, username]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Password reset failed' });
+  }
+});
+
 module.exports = router;
+
