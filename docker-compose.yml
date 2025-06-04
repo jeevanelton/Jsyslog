@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: jsyslogd
     volumes:
       - db-data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
   app:
     build: .
     ports:
