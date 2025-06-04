@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import LogTable from "../components/LogTable";
 import LogsSecChart from "../components/LogsSecChart";
+import SeverityChart from "../components/SeverityChart";
 
 
 
@@ -22,6 +23,7 @@ const DashboardPage = () => {
   });
 
   const [logsPerSecHistory, setLogsPerSecHistory] = useState([]);
+  const [severityData, setSeverityData] = useState([]);
 
   const MAX_LOGS = 30;
 
@@ -53,6 +55,20 @@ const DashboardPage = () => {
       socket.off('new-log');
       socket.off('disconnect');
     };
+  }, []);
+
+  // fetch severity summary
+  useEffect(() => {
+    const loadSummary = async () => {
+      try {
+        const res = await fetch('/logs/summary');
+        const data = await res.json();
+        setSeverityData(data);
+      } catch (err) {
+        console.error('Failed to load summary', err);
+      }
+    };
+    loadSummary();
   }, []);
 
   useEffect(() => {
@@ -87,7 +103,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="p-6 font-sans bg-gray-50 min-h-screen">
+    <div className="p-6 font-sans bg-gray-50 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">📡 Real-Time Dashboard</h1>
 
       {/* Server Stats */}
@@ -117,6 +133,10 @@ const DashboardPage = () => {
         <div className="bg-white p-4 rounded shadow mb-6">
           <h2 className="text-lg font-bold mb-2">📈 Logs/sec Trend (Last 1 min)</h2>
           <LogsSecChart dataPoints={logsPerSecHistory} />
+        </div>
+        <div className="bg-white p-4 rounded shadow mb-6">
+          <h2 className="text-lg font-bold mb-2">📊 Severity Distribution</h2>
+          <SeverityChart data={severityData} />
         </div>
       </div>
 

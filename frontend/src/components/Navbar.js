@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 
 const Navbar = ({ user, onLogout }) => {
     return (
-        <header className="bg-white shadow mb-6">
+        <header className="bg-white dark:bg-gray-800 shadow mb-6">
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                <h1 className="text-xl font-bold text-gray-800">📡 jsyslogd</h1>
+                <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">📡 jsyslogd</h1>
                 <nav className="space-x-6">
                     <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 font-medium">
                         Dashboard
@@ -30,6 +30,7 @@ const Navbar = ({ user, onLogout }) => {
                     <button onClick={onLogout} className="text-red-600 font-medium hover:underline ml-4">
                         Logout
                     </button>
+                    <button onClick={() => document.documentElement.classList.toggle('dark')} className="ml-2 text-gray-600 dark:text-gray-200">🌓</button>
                 </nav>
             </div>
         </header>

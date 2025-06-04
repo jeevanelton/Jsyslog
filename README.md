@@ -5,6 +5,13 @@ PostgreSQL database and can be viewed in real time from the browser. The
 repository includes everything required to run the service either with Docker or
 directly on your machine.
 
+### Features
+
+- Real-time dashboard with log rate and severity charts
+- Dark mode toggle for the web UI
+- Download filtered logs as CSV via `/logs/csv`
+- API endpoint `/logs/summary` returning counts by severity
+
 ## Quick start with Docker
 
 1. Build and start the stack:
