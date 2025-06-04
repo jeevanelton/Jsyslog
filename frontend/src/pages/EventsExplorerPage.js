@@ -68,34 +68,33 @@ const EventsExplorerPage = () => {
     setPage(1);
   };
 
-  const downloadCSV = () => {
-    if (!logs.length) {
-      alert("No logs to download!");
-      return;
+  const downloadCSV = async () => {
+    try {
+      const params = new URLSearchParams();
+      params.append("limit", 1000);
+      if (search) params.append("search", search);
+      if (from) params.append("from", from);
+      if (to) params.append("to", to);
+      if (severityFilter.length) severityFilter.forEach(s => params.append("severity", s));
+      if (facilityFilter.length) facilityFilter.forEach(f => params.append("facility", f));
+      if (logic) params.append("logic", logic);
+      if (useRegex) params.append("regex", useRegex);
+      const res = await fetch(`/logs/csv?${params.toString()}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `logs_export_${new Date().toISOString()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      alert("Failed to download CSV");
     }
-
-    const header = ["Severity", "Facility", "Hostname", "IP Address", "Message", "Date"];
-    const rows = logs.map(log => [
-      log.severity,
-      log.facility,
-      log.hostname,
-      log.host_address,
-      log.message.replace(/"/g, '""'),
-      log.received_at || log.date
-    ]);
-    const csvContent = [header, ...rows].map(row => row.map(field => `"${field}"`).join(",")).join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `logs_export_${new Date().toISOString()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   return (
-    <div className="p-6 font-sans bg-gray-50 min-h-screen">
+    <div className="p-6 font-sans bg-gray-50 dark:bg-gray-900 dark:text-gray-100 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">🔎 Events Explorer</h1>
 
       <Filters

@@ -1,13 +1,26 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 //const db = require('../db');
 const path = require('path');
 const app = express();
-//const server = http.createServer(app);
 const { Server } = require('socket.io');
-const server = http.createServer(app);
-const io = new Server(server);
+
+let httpServer;
+if (process.env.HTTPS_KEY && process.env.HTTPS_CERT) {
+  const options = {
+    key: fs.readFileSync(process.env.HTTPS_KEY),
+    cert: fs.readFileSync(process.env.HTTPS_CERT)
+  };
+  httpServer = https.createServer(options, app);
+  console.log('🔒 HTTPS enabled');
+} else {
+  httpServer = http.createServer(app);
+}
+
+const io = new Server(httpServer);
 const PORT = 3000;
 const cors = require("cors");
 //const http = require('http').createServer(app);
@@ -20,6 +33,7 @@ const adminRouter = require('../routes/admin');
 const authRouter = require('../routes/auth');
 const usersRouter = require('../routes/users');
 const logsRouter = require('../routes/logs');
+const metricsRouter = require('../routes/metrics');
 const jwt = require("jsonwebtoken");
 const { socketAuthMiddleware } = require('../middleware/auth');
 
@@ -47,6 +61,7 @@ app.use('/api', usersRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/admin', adminRouter.router);
 app.use('/logs',logsRouter)
+app.use('/metrics', metricsRouter);
 
 // Serve React frontend (after build)
 // app.use(express.static(path.join(__dirname, '../frontend/build')));
@@ -68,9 +83,11 @@ io.on("connection", (socket) => {
   // Other event handlers (e.g., new-log, etc.)
 });
 
-server.listen(PORT,"0.0.0.0", () => {
-  console.log(`🌐 Web UI: http://0.0.0.0:${PORT}`);
+httpServer.listen(PORT,"0.0.0.0", () => {
+  const proto = process.env.HTTPS_KEY ? 'https' : 'http';
+  console.log(`🌐 Web UI: ${proto}://0.0.0.0:${PORT}`);
 });
 
 
 syslog(io)
+

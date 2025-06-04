@@ -10,9 +10,13 @@
   ],
   "forwarding": {
     "enabled": false,
-    "protocol": "udp",
-    "target_host": "wewe",
-    "target_port": 514,
+    "targets": [
+      {
+        "protocol": "udp",
+        "host": "wewe",
+        "port": 514
+      }
+    ],
     "filter": {
       "severity": [
         "alert"

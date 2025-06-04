@@ -38,7 +38,7 @@ const LoginPage = ({ onLogin }) => {
   };
 
   return (
-    <div className="max-w-sm mx-auto mt-20 bg-white p-6 rounded shadow">
+    <div className="max-w-sm mx-auto mt-20 bg-white dark:bg-gray-800 p-6 rounded shadow">
       <h2 className="text-2xl font-bold mb-4">🔐 Login</h2>
       {error && <p className="text-red-600 mb-2">{error}</p>}
       <form onSubmit={handleLogin} className="space-y-4">
