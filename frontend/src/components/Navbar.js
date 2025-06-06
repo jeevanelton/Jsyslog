@@ -6,7 +6,7 @@ const Navbar = ({ user, onLogout }) => {
     return (
         <header className="bg-white shadow mb-6">
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-                <h1 className="text-xl font-bold text-gray-800">📡 jsyslogd</h1>
+                <h1 className="text-xl font-bold text-gray-800">📡 Jsyslog</h1>
                 <nav className="space-x-6">
                     <Link to="/dashboard" className="text-gray-600 hover:text-blue-600 font-medium">
                         Dashboard
