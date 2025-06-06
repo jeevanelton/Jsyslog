@@ -1,4 +1,4 @@
-# 📡 Jsyslogd - Real-Time Syslog Dashboard
+# 📡 Jsyslog - Real-Time Syslog Dashboard
 
 A modern, real-time syslog server with a beautiful React dashboard and PostgreSQL backend.
 
