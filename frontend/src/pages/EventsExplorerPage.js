@@ -3,6 +3,8 @@ import LogTable from "../components/LogTable";
 import Filters from "../components/Filters";
 import RealtimeNotice from "../components/RealtimeNotice";
 
+const API_BASE = process.env.REACT_APP_API_BASE;
+
 const EventsExplorerPage = () => {
   const [logs, setLogs] = useState([]);
   const [page, setPage] = useState(1);
@@ -32,7 +34,7 @@ const EventsExplorerPage = () => {
       if (logic) params.append("logic", logic);
       if (regex) params.append("regex", regex);
   
-      const res = await fetch(`/logs?${params.toString()}`);
+      const res = await fetch(`${API_BASE}/logs?${params.toString()}`);
       const data = await res.json();
   
       if (!res.ok) {
@@ -94,40 +96,46 @@ const EventsExplorerPage = () => {
     document.body.removeChild(link);
   };
 
-  return (
-    <div className="p-6 font-sans bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">🔎 Events Explorer</h1>
+return (
+    <div className="p-6 font-sans bg-gray-100 min-h-screen w-full">
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h1 className="text-3xl font-extrabold mb-4 text-gray-800">🔎 Events Explorer</h1>
 
-      <Filters
-        search={search} setSearch={setSearch}
-        from={from} setFrom={setFrom}
-        to={to} setTo={setTo}
-        severityFilter={severityFilter} setSeverityFilter={setSeverityFilter}
-        facilityFilter={facilityFilter} setFacilityFilter={setFacilityFilter}
-        logic={logic} setLogic={setLogic}
-        useRegex={useRegex} setUseRegex={setUseRegex}
-        onReset={handleReset} onFilter={handleFilter}
-      />
+        <Filters
+          search={search} setSearch={setSearch}
+          from={from} setFrom={setFrom}
+          to={to} setTo={setTo}
+          severityFilter={severityFilter} setSeverityFilter={setSeverityFilter}
+          facilityFilter={facilityFilter} setFacilityFilter={setFacilityFilter}
+          logic={logic} setLogic={setLogic}
+          useRegex={useRegex} setUseRegex={setUseRegex}
+          onReset={handleReset} onFilter={handleFilter}
+        />
 
-      <RealtimeNotice visible={newLogNotice} onRefresh={handleReset} />
+        <RealtimeNotice visible={newLogNotice} onRefresh={handleReset} />
 
-      <button
-        onClick={downloadCSV}
-        className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded mb-4"
-      >📥 Download CSV</button>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4">
+          <button
+            onClick={downloadCSV}
+            className="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded mb-4 sm:mb-0"
+          >📥 Download CSV</button>
 
-      {error && (
-        <div className="text-red-600 mb-4 bg-red-100 p-3 rounded border border-red-300">
-          ⚠️ {error}
+          {error && (
+            <div className="text-red-600 bg-red-100 p-3 rounded border border-red-300 w-full sm:w-auto">
+              ⚠️ {error}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
-      <LogTable logs={logs} />
+      <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+        <LogTable logs={logs} />
+      </div>
 
-      <div className="mt-6 flex items-center gap-6">
-        <button onClick={() => setPage(p => Math.max(p - 1, 1))} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">⬅ Prev</button>
-        <span className="text-gray-700">Page {page}</span>
-        <button onClick={() => setPage(p => p + 1)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next ➡</button>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+        <button onClick={() => setPage(p => Math.max(p - 1, 1))} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 w-full sm:w-auto">⬅ Prev</button>
+        <span className="text-gray-700 text-center">Page {page}</span>
+        <button onClick={() => setPage(p => p + 1)} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 w-full sm:w-auto">Next ➡</button>
       </div>
     </div>
   );

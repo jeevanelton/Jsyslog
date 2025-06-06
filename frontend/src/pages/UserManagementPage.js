@@ -1,5 +1,7 @@
 // pages/UserManagementPage.js
 import React, { useEffect, useState } from "react";
+const API_BASE = process.env.REACT_APP_API_BASE;
+
 
 const UserManagementPage = () => {
   const [users, setUsers] = useState([]);
@@ -12,7 +14,7 @@ const UserManagementPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch("/api/users", {
+      const res = await fetch(`${API_BASE}/api/users`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -26,6 +28,8 @@ const UserManagementPage = () => {
     }
   };
 
+  
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -36,7 +40,7 @@ const UserManagementPage = () => {
     setFieldErrors({}); // Reset field-specific errors
 
     try {
-      const res = await fetch("/api/users", {
+      const res = await fetch(`${API_BASE}/api/users`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -84,7 +88,7 @@ const UserManagementPage = () => {
     if (!window.confirm("Are you sure to delete this user?")) return;
 
     try {
-      await fetch(`/api/users/${id}`, {
+      await fetch(`${API_BASE}/api/users/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

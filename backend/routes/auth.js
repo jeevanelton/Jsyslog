@@ -24,13 +24,15 @@ router.post('/login', async (req, res) => {
   if (!username || !password)
     return res.status(400).json({ error: "Missing username or password" });
 
+  
+
   const result = await pool.query(`SELECT * FROM users WHERE username = $1`, [username]);
   const user = result.rows[0];
-
   if (!user)
     return res.status(401).json({ error: "Invalid username or password" });
 
   const match = await bcrypt.compare(password, user.password_hash);
+  console.log(match)
   if (!match)
     return res.status(401).json({ error: "Invalid username or password" });
 

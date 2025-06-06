@@ -7,8 +7,12 @@ const app = express();
 //const server = http.createServer(app);
 const { Server } = require('socket.io');
 const server = http.createServer(app);
-const io = new Server(server);
-const PORT = 3000;
+const io = new Server(server,{
+  cors: {
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+  }
+});
 const cors = require("cors");
 //const http = require('http').createServer(app);
 //const io = require('socket.io')(http);
@@ -38,7 +42,14 @@ cron.schedule('30 0 * * *', () => {
   cleanupOldLogs();
 });
 
-app.use(cors());
+const allowedOrigin = process.env.CORS_ORIGIN;
+
+app.use(cors({
+  origin: allowedOrigin,
+  credentials: true
+}));
+
+
 app.use(express.json());
 
 //routes
@@ -68,8 +79,8 @@ io.on("connection", (socket) => {
   // Other event handlers (e.g., new-log, etc.)
 });
 
-server.listen(PORT,"0.0.0.0", () => {
-  console.log(`🌐 Web UI: http://0.0.0.0:${PORT}`);
+server.listen(process.env.PORT,"0.0.0.0", () => {
+  console.log(`🌐 Web UI: http://0.0.0.0:${process.env.PORT}`);
 });
 
 
